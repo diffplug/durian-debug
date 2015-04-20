@@ -1,0 +1,273 @@
+plugins {
+	// osgi
+	id "com.diffplug.gradle.osgi.bndmanifest" version "2.1.1"
+	// code formatting
+	id "com.diffplug.gradle.spotless" version "1.3.3"
+	// bintray uploading
+	id "com.jfrog.bintray" version "1.3.1"
+	// github pages
+	id "org.ajoberstar.github-pages" version "1.4.2"
+}
+
+repositories {
+	mavenCentral()
+	// SNAPSHOT versions are free to rely on other SNAPSHOT libraries
+	if (project.version.endsWith('-SNAPSHOT')) {
+		maven {
+			url 'https://oss.sonatype.org/content/repositories/snapshots/'
+		}
+		configurations.all {
+			resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+		}
+	}
+}
+
+//////////
+// JAVA //
+//////////
+apply plugin: 'java'
+sourceSets {
+	main { java {
+			srcDir 'src'
+	} }
+	test { java {
+			srcDir 'test'
+	} }
+}
+sourceCompatibility = VER_JAVA
+targetCompatibility = VER_JAVA
+
+dependencies {
+	compile "com.diffplug.durian:durian-core:${VER_DURIAN}"
+	testCompile "com.diffplug.durian:durian-testlib:${VER_DURIAN}"
+	testCompile "com.google.truth:truth:${VER_TRUTH}"
+	testCompile "junit:junit:${VER_JUNIT}"
+}
+
+//////////
+// OSGI //
+//////////
+jar.manifest.attributes (
+	'Bundle-SymbolicName': 'com.diffplug.durian.debug',
+	'Bundle-Description': project.description,
+	'Export-Package': 'com.diffplug.common.debug.*',
+	'Bundle-RequiredExecutionEnvironment': 'JavaSE-1.8',
+	'Bundle-Vendor': 'DiffPlug',
+	'Bundle-DocURL': "https://github.com/${project.org}/${project.name}",
+	'Bundle-License': "https://github.com/${project.org}/${project.name}/blob/v${project.version}/LICENSE",
+	'-removeheaders': 'Bnd-LastModified,Bundle-Name,Created-By,Tool',
+)
+osgiBndManifest {
+	copyTo 'META-INF/MANIFEST.MF'
+}
+
+/////////////
+// ECLIPSE //
+/////////////
+apply plugin: 'eclipse'
+eclipse {
+	project {
+		natures 'org.eclipse.pde.PluginNature'
+		natures 'org.eclipse.jdt.core.javanature'
+
+		buildCommand 'org.eclipse.jdt.core.javabuilder'
+		buildCommand 'org.eclipse.pde.ManifestBuilder'
+		buildCommand 'org.eclipse.pde.SchemaBuilder'
+	}
+	classpath {
+		downloadSources true
+		downloadJavadoc true
+	}
+	jdt {
+		sourceCompatibility VER_JAVA
+		targetCompatibility VER_JAVA
+	}
+}
+// always create fresh projects
+tasks.eclipse.dependsOn(cleanEclipse)
+
+////////////
+// FORMAT //
+////////////
+spotless {
+	java {
+		licenseHeaderFile	'gradle/spotless.license.java'		// License header file
+		importOrderFile		'gradle/spotless.importorder'		// An import ordering file, exported from Eclipse
+		eclipseFormatFile	'gradle/spotless.eclipseformat.xml'	// XML file dumped out by the Eclipse formatter
+	}
+	format 'misc', {
+		target '**/.gitignore', '**/*.gradle', '**/*.md', '**/*.sh'
+		indentWithTabs()
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+	freshmark {}
+}
+
+//////////////
+// FINDBUGS //
+//////////////
+apply plugin: 'findbugs'
+findbugs {
+	toolVersion = VER_FINDBUGS
+	sourceSets = [sourceSets.main]	// don't check the test code
+	ignoreFailures = false 	// bug free or it doesn't ship!
+	reportsDir = file('build/findbugs')
+	effort = 'max'			// min|default|max
+	reportLevel = 'low'		// low|medium|high (low = sensitive to even minor mistakes)
+	omitVisitors = []		// bugs that we want to ignore
+}
+// HTML instead of XML
+tasks.withType(FindBugs) {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
+}
+// we'll want the findbugs annotations (they don't have a 3.0.1 version)
+dependencies {
+	compile 'com.google.code.findbugs:annotations:3.0.0'
+	compile 'com.google.code.findbugs:jsr305:3.0.0'
+}
+
+///////////
+// MAVEN //
+///////////
+apply plugin: 'maven-publish'
+
+task sourcesJar(type: Jar) {
+	classifier = 'sources'
+	from sourceSets.main.allJava
+}
+
+// Where it's possible to name parameters and methods clearly enough
+// that javadoc is not necessary, why make the code bigger?
+//
+// Thus, no javadoc warnings.
+String version_str = version.endsWith('-SNAPSHOT') ? 'snapshot' : project.version
+def makeLink = { url, text -> "<a href=\"${url}\" style=\"text-transform: none;\">${text}</a>" }
+def javadocInfo = '<h2>' + makeLink("https://github.com/${org}/${name}", "${group}:${name}:${version}") +
+' by ' + makeLink('http://www.diffplug.com', 'DiffPlug') + '</h2>'
+javadoc {
+	options.addStringOption('Xdoclint:none', '-quiet')
+	options.header javadocInfo
+	options.footer javadocInfo
+	options.links('https://docs.oracle.com/javase/8/docs/api/')
+	destinationDir file("build/docs/javadoc/${version_str}")
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	classifier = 'javadoc'
+	from javadoc.destinationDir
+}
+
+////////////////
+// PUBLISHING //
+////////////////
+def isSnapshot = project.version.endsWith('-SNAPSHOT')
+// pulls the credentials from either the environment variable or gradle.properties
+def cred = {
+	if (System.env[it] != null) {
+		return System.env[it]
+	} else if (project.hasProperty(it)) {
+		return project[it]
+	} else {
+		return 'unknown_' + it
+	}
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			artifact sourcesJar
+			artifact javadocJar
+			pom.withXml {
+				// findbugs annotations should have scope "provided"
+				asNode().dependencies.'*'.findAll() { it.groupId.text() == 'com.google.code.findbugs' }.each() { it.scope*.value = 'provided' }
+				// add MavenCentral requirements to the POM
+				asNode().children().last() + {
+					resolveStrategy = Closure.DELEGATE_FIRST
+					name project.name
+					description project.description
+					url "https://github.com/${project.org}/${project.name}"
+					scm {
+						url "https://github.com/${project.org}/${project.name}"
+						connection "scm:git:git://github.com/${project.org}/${project.name}"
+						developerConnection "scm:git:ssh:git@github.com/${project.org}/${project.name}"
+					}
+					licenses {
+						license {
+							name 'The Apache Software License, Version 2.0'
+							url 'http://www.apache.org/license/LICENSE-2.0.txt'
+							distribution 'repo'
+						}
+					}
+					developers {
+						developer {
+							id 'nedtwigg'
+							name 'Ned Twigg'
+							email 'ned.twigg@diffplug.com'
+						}
+					}
+				}
+			}
+		}
+	}
+	if (isSnapshot) {
+		// upload snapshots to oss.sonatype.org
+		repositories { maven {
+			url = 'https://oss.sonatype.org/content/repositories/snapshots'
+			credentials {
+				username = cred('nexus_user')
+				password = cred('nexus_pass')
+			}
+		} }
+	}
+}
+
+if (!isSnapshot) {
+	// upload releases to bintray and then mavenCentral
+	bintray {
+		user = cred('bintray_user')
+		key = cred('bintray_pass')
+		publications = ['mavenJava']
+		publish = true
+		pkg {
+			repo = 'opensource'
+			name = project.name
+			userOrg = project.org
+			version {
+				name = project.version
+				mavenCentralSync {
+					user = cred('nexus_user')
+					password = cred('nexus_pass')
+				}
+			}
+		}
+	}
+
+	publish.dependsOn(bintrayUpload)
+	bintrayUpload.dependsOn(['generatePomFileForMavenJavaPublication', jar, sourcesJar, javadocJar])
+}
+
+//////////////////
+// GITHUB PAGES //
+//////////////////
+githubPages {
+	repoUri = "https://github.com/${project.org}/${project.name}"
+	deleteExistingFiles = false
+	pages {
+		from 'build/docs'
+	}
+	credentials {
+		username = cred('gh_token')
+		password = ''
+	}
+}
+tasks.prepareGhPages.dependsOn(":javadoc")
+
+// helps external scripts detect version
+task printVersion << {
+	println version
+}

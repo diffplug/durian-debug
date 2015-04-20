@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-Description: DurianDebug - Utilities for sloppy debugging and p
+ rofiling
+Bundle-DocURL: https://github.com/diffplug/durian-debug
+Bundle-License: https://github.com/diffplug/durian-debug/blob/v1.0.0-S
+ NAPSHOT/LICENSE
+Bundle-ManifestVersion: 2
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-SymbolicName: com.diffplug.durian.debug
+Bundle-Vendor: DiffPlug
+Bundle-Version: 1.0.0.SNAPSHOT
+Private-Package: com.diffplug.common.rx
