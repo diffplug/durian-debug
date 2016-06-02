@@ -59,7 +59,7 @@ public class FieldsAndGetters {
 				// gotta pass the predicate 
 				.filter(predicate)
 				// get its value
-				.map(field -> createEntry(field, tryCall(field.getName(), () -> field.get(obj))));
+				.map(field -> ImmutableEntry.create(field, tryCall(field.getName(), () -> field.get(obj))));
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class FieldsAndGetters {
 				// we only want methods that pass our predicate
 				.filter(predicate)
 				// turn it into Map<Method, Result>
-				.map(method -> createEntry(method, tryCall(method.getName(), () -> method.invoke(obj))));
+				.map(method -> ImmutableEntry.create(method, tryCall(method.getName(), () -> method.invoke(obj))));
 	}
 
 	/** Sentinel class for null objects. */
@@ -148,10 +148,10 @@ public class FieldsAndGetters {
 	 */
 	public static Stream<Map.Entry<String, Object>> fieldsAndGetters(Object obj, Predicate<String> predicate) {
 		Stream<Map.Entry<String, Object>> fields = fields(obj, field -> predicate.test(field.getName()))
-				.map(entry -> createEntry(entry.getKey().getName(), entry.getValue()));
+				.map(entry -> ImmutableEntry.create(entry.getKey().getName(), entry.getValue()));
 		Function<Method, String> methodName = method -> method.getName() + "()";
 		Stream<Map.Entry<String, Object>> getters = getters(obj, field -> predicate.test(methodName.apply(field)))
-				.map(entry -> createEntry(methodName.apply(entry.getKey()), entry.getValue()));
+				.map(entry -> ImmutableEntry.create(methodName.apply(entry.getKey()), entry.getValue()));
 		return Stream.concat(fields, getters);
 	}
 
@@ -198,23 +198,4 @@ public class FieldsAndGetters {
 		dumpIf(name, obj, Predicates.alwaysTrue(), entry -> entry.getValue() != null, printer);
 	}
 
-	/** Creates an immutable Map.Entry. */
-	private static <K, V> Map.Entry<K, V> createEntry(K key, V value) {
-		return new Map.Entry<K, V>() {
-			@Override
-			public K getKey() {
-				return key;
-			}
-
-			@Override
-			public V getValue() {
-				return value;
-			}
-
-			@Override
-			public V setValue(V value) {
-				throw new UnsupportedOperationException();
-			}
-		};
-	}
 }

@@ -18,9 +18,8 @@ package com.diffplug.common.debug;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.primitives.Doubles;
-
 import com.diffplug.common.base.Unhandled;
+import com.diffplug.common.primitives.Doubles;
 
 /** Calculates the running mean/median/min/max of a sampled signal. */
 public class RunningStats {

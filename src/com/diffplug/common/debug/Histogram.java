@@ -15,14 +15,12 @@
  */
 package com.diffplug.common.debug;
 
+import java.util.Comparator;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-
-import com.diffplug.common.collect.ImmutableSortedSet;
-import com.diffplug.common.collect.Maps;
-import com.diffplug.common.collect.Ordering;
 
 /** Stores histograms of things for measuring performance. */
 public class Histogram<T> {
@@ -52,19 +50,18 @@ public class Histogram<T> {
 	 * an inconsistent view (only partly modified).
 	 */
 	public String getTopValues(int numValues, Function<? super T, String> toString) {
-		Ordering<Map.Entry<Integer, String>> byKey = Ordering.natural().onResultOf(Map.Entry::getKey);
-		Ordering<Map.Entry<Integer, String>> byValue = Ordering.natural().onResultOf(Map.Entry::getValue);
+		Comparator<Map.Entry<Integer, String>> byKey = Comparator.comparing(Map.Entry::getKey);
+		Comparator<Map.Entry<Integer, String>> byValue = Comparator.comparing(Map.Entry::getValue);
 		// sort by frequency
-		ImmutableSortedSet.Builder<Map.Entry<Integer, String>> builder = ImmutableSortedSet.orderedBy(byKey.compound(byValue));
+		TreeSet<Map.Entry<Integer, String>> builder = new TreeSet<>(byKey.thenComparing(byValue));
 		for (Map.Entry<T, AtomicInteger> entry : map.entrySet()) {
-			builder.add(Maps.immutableEntry(entry.getValue().get(), toString.apply(entry.getKey())));
+			builder.add(ImmutableEntry.create(entry.getValue().get(), toString.apply(entry.getKey())));
 		}
-		ImmutableSortedSet<Map.Entry<Integer, String>> set = builder.build().descendingSet();
 
 		// find the length of the longestKey
 		int longestKey = 0;
 		int count = 0;
-		for (Map.Entry<Integer, String> entry : set) {
+		for (Map.Entry<Integer, String> entry : builder.descendingSet()) {
 			if (++count > numValues) {
 				break;
 			}
@@ -74,7 +71,7 @@ public class Histogram<T> {
 		// iterate over the map
 		StringBuilder output = new StringBuilder();
 		count = 0;
-		for (Map.Entry<Integer, String> entry : set) {
+		for (Map.Entry<Integer, String> entry : builder.descendingSet()) {
 			if (++count > numValues) {
 				break;
 			}
