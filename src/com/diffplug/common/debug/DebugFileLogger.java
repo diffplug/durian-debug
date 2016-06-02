@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 
 import com.diffplug.common.base.Errors;
+import com.diffplug.common.base.Preconditions;
 import com.diffplug.common.base.StringPrinter;
 
 /**
@@ -31,7 +32,7 @@ public class DebugFileLogger {
 	/** Writes to the given filename on the current user's Desktop. */
 	public static StringPrinter writeToDesktop(String filename) {
 		File file = new File(System.getProperty("user.home") + "/Desktop/" + filename);
-		file.getParentFile().mkdirs();
+		Preconditions.checkState(file.getParentFile().mkdirs());
 		return writeTo(file);
 	}
 
