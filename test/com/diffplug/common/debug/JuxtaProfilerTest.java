@@ -26,10 +26,10 @@ import com.google.common.collect.Range;
 import com.diffplug.common.base.StringPrinter;
 import com.diffplug.common.base.Throwing;
 
-public class ProfilerTest {
+public class JuxtaProfilerTest {
 	@Test
 	public void runProfiler() throws Throwable {
-		Profiler profiler = new Profiler();
+		JuxtaProfiler profiler = new JuxtaProfiler();
 		profiler.addTestMs("A", () -> Thread.sleep(100));
 		profiler.addTestMs("B", () -> Thread.sleep(20));
 

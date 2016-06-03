@@ -22,8 +22,11 @@ import java.util.Objects;
 
 import com.diffplug.common.base.Throwing;
 
-/** Profiles some code. */
-public class Profiler {
+/**
+ * Profiles some code by running the test code one
+ * after the other over and over.
+ */
+public class JuxtaProfiler {
 	private List<Test> tests = new ArrayList<>();
 
 	/** Adds the given test to the profiler. */
@@ -43,6 +46,7 @@ public class Profiler {
 
 	/** Adds the given runnable as a test to the profiler. */
 	public void addTest(String name, Throwing.Runnable toTest, LapTimer timer) {
+		Objects.requireNonNull(toTest);
 		addTest(name, new InitTimedCleanup(timer) {
 			@Override
 			protected void init() {}
@@ -94,8 +98,8 @@ public class Profiler {
 		private final RunningStats stats = new RunningStats();
 
 		public Test(String name, ITimed test) {
-			this.name = name;
-			this.underTest = test;
+			this.name = Objects.requireNonNull(name);
+			this.underTest = Objects.requireNonNull(test);
 		}
 
 		public void runTrial() {
