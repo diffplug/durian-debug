@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ public class StackDumper {
 
 	/** Dumps the given message and stack to the system error console. */
 	public static void dump(String message, List<StackTraceElement> stack) {
+		Objects.requireNonNull(message);
 		printEmphasized(message + "\n" + stackTraceToString(stack));
 	}
 
@@ -58,6 +60,7 @@ public class StackDumper {
 
 	/** Dumps the first {@code stackLimit} frames of the current stack to the system error console, excluding traces from {@code classPrefixesToExclude}. */
 	public static void dump(String message, int stackLimit, String... classPrefixesToExclude) {
+		Objects.requireNonNull(message);
 		// class names to include
 		Predicate<StackTraceElement> isIncluded = trace -> {
 			for (String prefix : classPrefixesToExclude) {
@@ -98,6 +101,8 @@ public class StackDumper {
 	 * @return a PrintStream with the above properties
 	 */
 	public static PrintStream wrapAndDumpWhenContains(PrintStream source, String trigger) {
+		Objects.requireNonNull(source);
+		Objects.requireNonNull(trigger);
 		StringPrinter wrapped = new StringPrinter(StringPrinter.stringsToLines(perLine -> {
 			source.println(perLine);
 			if (perLine.contains(trigger)) {

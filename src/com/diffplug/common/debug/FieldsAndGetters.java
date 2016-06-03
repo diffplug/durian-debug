@@ -20,9 +20,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import com.diffplug.common.base.Predicates;
 import com.diffplug.common.base.StringPrinter;
@@ -38,7 +41,7 @@ public class FieldsAndGetters {
 	 *
 	 * @see #fields(Object, Predicate)
 	 */
-	public static Stream<Map.Entry<Field, Object>> fields(Object obj) {
+	public static Stream<Map.Entry<Field, Object>> fields(@Nullable Object obj) {
 		return fields(obj, Predicates.alwaysTrue());
 	}
 
@@ -49,7 +52,8 @@ public class FieldsAndGetters {
 	 * and if they pass the given predicate, it includes them in a stream of {@code Map.Entry<Field, Object>}
 	 * where the entry's value is the value of the field for this object.
 	 */
-	public static Stream<Map.Entry<Field, Object>> fields(Object obj, Predicate<Field> predicate) {
+	public static Stream<Map.Entry<Field, Object>> fields(@Nullable Object obj, Predicate<Field> predicate) {
+		Objects.requireNonNull(predicate);
 		Class<?> clazz = obj == null ? ObjectIsNull.class : obj.getClass();
 		return Arrays.asList(clazz.getFields()).stream()
 				// gotta be public
@@ -67,7 +71,7 @@ public class FieldsAndGetters {
 	 *
 	 * @see #getters(Object, Predicate)
 	 */
-	public static Stream<Map.Entry<Method, Object>> getters(Object obj) {
+	public static Stream<Map.Entry<Method, Object>> getters(@Nullable Object obj) {
 		return getters(obj, Predicates.alwaysTrue());
 	}
 
@@ -82,7 +86,8 @@ public class FieldsAndGetters {
 	 * being inspected, e.g. {@link java.io.InputStream#read()}.  These will be called unless you manually
 	 * exclude them using the predicate.
 	 */
-	public static Stream<Map.Entry<Method, Object>> getters(Object obj, Predicate<Method> predicate) {
+	public static Stream<Map.Entry<Method, Object>> getters(@Nullable Object obj, Predicate<Method> predicate) {
+		Objects.requireNonNull(predicate);
 		Class<?> clazz = obj == null ? ObjectIsNull.class : obj.getClass();
 		return Arrays.asList(clazz.getMethods()).stream()
 				// we only want methods that don't take parameters
@@ -133,7 +138,7 @@ public class FieldsAndGetters {
 	 *
 	 * @see #getters(Object, Predicate)
 	 */
-	public static Stream<Map.Entry<String, Object>> fieldsAndGetters(Object obj) {
+	public static Stream<Map.Entry<String, Object>> fieldsAndGetters(@Nullable Object obj) {
 		return fieldsAndGetters(obj, Predicates.alwaysTrue());
 	}
 
@@ -146,7 +151,8 @@ public class FieldsAndGetters {
 	 * @see #fields(Object, Predicate)
 	 * @see #getters(Object, Predicate)
 	 */
-	public static Stream<Map.Entry<String, Object>> fieldsAndGetters(Object obj, Predicate<String> predicate) {
+	public static Stream<Map.Entry<String, Object>> fieldsAndGetters(@Nullable Object obj, Predicate<String> predicate) {
+		Objects.requireNonNull(predicate);
 		Stream<Map.Entry<String, Object>> fields = fields(obj, field -> predicate.test(field.getName()))
 				.map(entry -> ImmutableEntry.create(entry.getKey().getName(), entry.getValue()));
 		Function<Method, String> methodName = method -> method.getName() + "()";
@@ -159,7 +165,10 @@ public class FieldsAndGetters {
 	 * Passes each field and getter of {@code obj} to {@code evalPredicate}, grabs its value if it passes, and if the value passes {@code dumpPredicate} then it is dumped to {@code printer}.
 	 * @see #fieldsAndGetters(Object, Predicate)
 	 */
-	public static void dumpIf(String name, Object obj, Predicate<String> evalPredicate, Predicate<Map.Entry<String, Object>> dumpPredicate, StringPrinter printer) {
+	public static void dumpIf(String name, @Nullable Object obj, Predicate<String> evalPredicate, Predicate<Map.Entry<String, Object>> dumpPredicate, StringPrinter printer) {
+		Objects.requireNonNull(name);
+		Objects.requireNonNull(dumpPredicate);
+		Objects.requireNonNull(printer);
 		printer.println(name + ": " + obj.getClass().getName());
 		fieldsAndGetters(obj, evalPredicate).filter(dumpPredicate).forEach(entry -> {
 			printer.println("\t" + entry.getKey() + " = " + entry.getValue());

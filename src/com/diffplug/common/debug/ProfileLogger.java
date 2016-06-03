@@ -32,7 +32,7 @@ public class ProfileLogger {
 	private Mode mode;
 
 	public ProfileLogger(StringPrinter printer, Mode mode) {
-		this.printer = printer;
+		this.printer = Objects.requireNonNull(printer);
 		setMode(mode);
 	}
 
@@ -42,6 +42,7 @@ public class ProfileLogger {
 
 	/** Logs the given statement. */
 	public void log(String txt) {
+		Objects.requireNonNull(txt);
 		switch (mode) {
 		case EPOCH:
 			long elapsed = System.currentTimeMillis() - epoch;

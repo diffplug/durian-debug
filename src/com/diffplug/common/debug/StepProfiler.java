@@ -16,6 +16,7 @@
 package com.diffplug.common.debug;
 
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -48,8 +49,8 @@ public class StepProfiler {
 	LinkedHashMap<String, Step> steps = new LinkedHashMap<>();
 
 	public StepProfiler(LapTimer timer, String prefix) {
-		this.timer = timer;
-		this.prefix = prefix;
+		this.timer = Objects.requireNonNull(timer);
+		this.prefix = Objects.requireNonNull(prefix);
 	}
 
 	public StepProfiler(LapTimer timer) {
@@ -58,6 +59,7 @@ public class StepProfiler {
 
 	/** Starts accumulating time to the given step. If a step was already accumulating time, it is stopped. */
 	public synchronized void startStep(String name) {
+		Objects.requireNonNull(name);
 		finish();
 
 		Step step = steps.computeIfAbsent(name, Step::new);

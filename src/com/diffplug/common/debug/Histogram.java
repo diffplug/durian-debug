@@ -17,6 +17,7 @@ package com.diffplug.common.debug;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +35,7 @@ public class Histogram<T> {
 
 	/** Increments the given key by the given amount. */
 	public int add(T key, int count) {
+		Objects.requireNonNull(key);
 		return map.computeIfAbsent(key, u -> new AtomicInteger()).addAndGet(count);
 	}
 
@@ -50,6 +52,7 @@ public class Histogram<T> {
 	 * an inconsistent view (only partly modified).
 	 */
 	public String getTopValues(int numValues, Function<? super T, String> toString) {
+		Objects.requireNonNull(toString);
 		Comparator<Map.Entry<Integer, String>> byKey = Comparator.comparing(Map.Entry::getKey);
 		Comparator<Map.Entry<Integer, String>> byValue = Comparator.comparing(Map.Entry::getValue);
 		// sort by frequency

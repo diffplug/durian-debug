@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
+import java.util.Objects;
 
 import com.diffplug.common.base.Errors;
 import com.diffplug.common.base.Preconditions;
@@ -31,6 +32,7 @@ import com.diffplug.common.base.StringPrinter;
 public class DebugFileLogger {
 	/** Writes to the given filename on the current user's Desktop. */
 	public static StringPrinter writeToDesktop(String filename) {
+		Objects.requireNonNull(filename);
 		File file = new File(System.getProperty("user.home") + "/Desktop/" + filename);
 		Preconditions.checkState(file.getParentFile().mkdirs());
 		return writeTo(file);
@@ -38,6 +40,7 @@ public class DebugFileLogger {
 
 	/** Writes to the given file. */
 	public static StringPrinter writeTo(File to) {
+		Objects.requireNonNull(to);
 		return Errors.rethrow().get(() -> {
 			@SuppressWarnings("resource") // don't worry about the resource leak, it's just for debug stuff
 			PrintStream stream = new PrintStream(to, StandardCharsets.UTF_8.name());
