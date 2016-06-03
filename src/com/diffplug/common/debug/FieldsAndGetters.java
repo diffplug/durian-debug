@@ -45,6 +45,10 @@ public class FieldsAndGetters {
 		return fields(obj, Predicates.alwaysTrue());
 	}
 
+	private static Class<?> getClassNullable(@Nullable Object obj) {
+		return obj == null ? ObjectIsNull.class : obj.getClass();
+	}
+
 	/**
 	 * Returns a {@code Stream} of all public fields which match {@code predicate} and their values for the given object.
 	 * <p>
@@ -54,8 +58,7 @@ public class FieldsAndGetters {
 	 */
 	public static Stream<Map.Entry<Field, Object>> fields(@Nullable Object obj, Predicate<Field> predicate) {
 		Objects.requireNonNull(predicate);
-		Class<?> clazz = obj == null ? ObjectIsNull.class : obj.getClass();
-		return Arrays.asList(clazz.getFields()).stream()
+		return Arrays.asList(getClassNullable(obj).getFields()).stream()
 				// gotta be public
 				.filter(field -> Modifier.isPublic(field.getModifiers()))
 				// gotta be an instance field
@@ -88,8 +91,7 @@ public class FieldsAndGetters {
 	 */
 	public static Stream<Map.Entry<Method, Object>> getters(@Nullable Object obj, Predicate<Method> predicate) {
 		Objects.requireNonNull(predicate);
-		Class<?> clazz = obj == null ? ObjectIsNull.class : obj.getClass();
-		return Arrays.asList(clazz.getMethods()).stream()
+		return Arrays.asList(getClassNullable(obj).getMethods()).stream()
 				// we only want methods that don't take parameters
 				.filter(method -> method.getParameterTypes().length == 0)
 				// we only want public methods
@@ -169,7 +171,7 @@ public class FieldsAndGetters {
 		Objects.requireNonNull(name);
 		Objects.requireNonNull(dumpPredicate);
 		Objects.requireNonNull(printer);
-		printer.println(name + ": " + obj.getClass().getName());
+		printer.println(name + ": " + getClassNullable(obj).getName());
 		fieldsAndGetters(obj, evalPredicate).filter(dumpPredicate).forEach(entry -> {
 			printer.println("\t" + entry.getKey() + " = " + entry.getValue());
 		});
@@ -179,7 +181,7 @@ public class FieldsAndGetters {
 	 * Dumps all fields and getters of {@code obj} to {@code System.out}.
 	 * @see #dumpIf
 	 */
-	public static void dumpAll(String name, Object obj) {
+	public static void dumpAll(String name, @Nullable Object obj) {
 		dumpAll(name, obj, StringPrinter.systemOut());
 	}
 
@@ -187,7 +189,7 @@ public class FieldsAndGetters {
 	 * Dumps all non-null fields and getters of {@code obj} to {@code System.out}.
 	 * @see #dumpIf
 	 */
-	public static void dumpNonNull(String name, Object obj) {
+	public static void dumpNonNull(String name, @Nullable Object obj) {
 		dumpNonNull(name, obj, StringPrinter.systemOut());
 	}
 
@@ -195,7 +197,7 @@ public class FieldsAndGetters {
 	 * Dumps all fields and getters of {@code obj} to {@code printer}.
 	 * @see #dumpIf
 	 */
-	public static void dumpAll(String name, Object obj, StringPrinter printer) {
+	public static void dumpAll(String name, @Nullable Object obj, StringPrinter printer) {
 		dumpIf(name, obj, Predicates.alwaysTrue(), Predicates.alwaysTrue(), printer);
 	}
 
@@ -203,7 +205,7 @@ public class FieldsAndGetters {
 	 * Dumps all non-null fields and getters of {@code obj} to {@code printer}.
 	 * @see #dumpIf
 	 */
-	public static void dumpNonNull(String name, Object obj, StringPrinter printer) {
+	public static void dumpNonNull(String name, @Nullable Object obj, StringPrinter printer) {
 		dumpIf(name, obj, Predicates.alwaysTrue(), entry -> entry.getValue() != null, printer);
 	}
 
