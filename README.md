@@ -1,4 +1,4 @@
-# <img align="left" src="_imgs/durian-debug.png"> DurianDebug: Utilities for sloppy debugging and profiling
+# <img align="left" src="_imgs/durian-debug.png"> DurianDebug: Utilities for quick 'n dirty debugging and profiling
 
 <!---freshmark shields
 output = [

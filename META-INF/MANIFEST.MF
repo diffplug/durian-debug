@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
-Bundle-Description: DurianDebug - Utilities for sloppy debugging and p
- rofiling
+Bundle-Description: DurianDebug - Utilities for quick 'n dirty debuggi
+ ng and profiling
 Bundle-DocURL: https://github.com/diffplug/durian-debug
 Bundle-License: https://github.com/diffplug/durian-debug/blob/v1.0.0-S
  NAPSHOT/LICENSE
