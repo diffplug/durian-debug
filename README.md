@@ -13,11 +13,11 @@ output = [
 	].join('\n');
 -->
 [![Maven artifact](https://img.shields.io/badge/mavenCentral-com.diffplug.durian%3Adurian--debug-blue.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.diffplug.durian%22%20AND%20a%3A%22durian-debug%22)
-[![Latest version](https://img.shields.io/badge/latest-0.1.0-blue.svg)](https://github.com/diffplug/durian-debug/releases/latest)
-[![Javadoc](https://img.shields.io/badge/javadoc-OK-blue.svg)](https://diffplug.github.io/durian-debug/javadoc/0.1.0/)
+[![Latest version](https://img.shields.io/badge/latest-1.0.0-blue.svg)](https://github.com/diffplug/durian-debug/releases/latest)
+[![Javadoc](https://img.shields.io/badge/javadoc-OK-blue.svg)](https://diffplug.github.io/durian-debug/javadoc/1.0.0/)
 [![License Apache](https://img.shields.io/badge/license-Apache-blue.svg)](https://tldrlegal.com/license/apache-license-2.0-(apache-2.0))
 
-[![Changelog](https://img.shields.io/badge/changelog-1.0.0-brightgreen.svg)](CHANGES.md)
+[![Changelog](https://img.shields.io/badge/changelog-1.1.0--SNAPSHOT-brightgreen.svg)](CHANGES.md)
 [![Travis CI](https://travis-ci.org/diffplug/durian-debug.svg?branch=master)](https://travis-ci.org/diffplug/durian-debug)
 [![Live chat](https://img.shields.io/badge/gitter-live_chat-brightgreen.svg)](https://gitter.im/diffplug/durian)
 <!---freshmark /shields -->

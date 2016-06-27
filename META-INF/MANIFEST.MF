@@ -2,15 +2,15 @@ Manifest-Version: 1.0
 Bundle-Description: DurianDebug - Utilities for quick 'n dirty debuggi
  ng and profiling
 Bundle-DocURL: https://github.com/diffplug/durian-debug
-Bundle-License: https://github.com/diffplug/durian-debug/blob/v1.0.0/L
- ICENSE
+Bundle-License: https://github.com/diffplug/durian-debug/blob/v1.1.0-S
+ NAPSHOT/LICENSE
 Bundle-ManifestVersion: 2
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-SymbolicName: com.diffplug.durian.debug
 Bundle-Vendor: DiffPlug
-Bundle-Version: 1.0.0
+Bundle-Version: 1.1.0.SNAPSHOT
 Export-Package: com.diffplug.common.debug;uses:="com.diffplug.common.b
- ase,javax.annotation";version="1.0.0"
+ ase,javax.annotation";version="1.1.0"
 Import-Package: com.diffplug.common.base;version="[1.1,2)",com.diffplu
  g.common.primitives;version="[1.1,2)",javax.annotation
 Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
