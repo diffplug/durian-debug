@@ -153,7 +153,6 @@ javadoc {
 	options.header javadocInfo
 	options.footer javadocInfo
 	options.links('https://docs.oracle.com/javase/8/docs/api/')
-	destinationDir file("build/docs/javadoc/${version_str}")
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -258,7 +257,8 @@ githubPages {
 	repoUri = "https://github.com/${project.org}/${project.name}"
 	deleteExistingFiles = false
 	pages {
-		from 'build/docs'
+		from javadoc.destinationDir
+		into "javadoc/${version_str}"
 	}
 	credentials {
 		username = cred('gh_token')
