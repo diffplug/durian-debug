@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import com.diffplug.common.base.Errors;
 import com.diffplug.common.base.Predicates;
 import com.diffplug.common.base.StringPrinter;
 import com.diffplug.common.base.Throwing;
@@ -46,20 +47,7 @@ public class FieldsAndGetters {
 	}
 
 	private static Class<?> getClassNullable(@Nullable Object obj) {
-		if (obj == null) {
-			return ObjectIsNull.class;
-		} else {
-			Class<?> clazz = obj.getClass();
-			System.out.println("##### " + clazz + " #####");
-			while (clazz != null && !Modifier.isPublic(clazz.getModifiers())) {
-				clazz = clazz.getSuperclass();
-			}
-			if (clazz == null) {
-				return ObjectIsPrivate.class;
-			} else {
-				return clazz;
-			}
-		}
+		return obj == null ? ObjectIsNull.class : obj.getClass();
 	}
 
 	/**
@@ -113,6 +101,23 @@ public class FieldsAndGetters {
 				.filter(method -> !Modifier.isStatic(method.getModifiers()))
 				// we only want methods that don't return void
 				.filter(method -> !method.getReturnType().equals(Void.TYPE))
+				// we'll convert them to the class they were declared by
+				.map(method -> Errors.rethrow().get(() -> {
+					if (Modifier.isPublic(method.getDeclaringClass().getModifiers())) {
+						return method;
+					} else {
+						for (Class<?> clazz : method.getDeclaringClass().getInterfaces()) {
+							if (Modifier.isPublic(clazz.getModifiers())) {
+								try {
+									return clazz.getMethod(method.getName());
+								} catch (NoSuchMethodException e) {
+									// take no action
+								}
+							}
+						}
+					}
+					return method;
+				}))
 				// we only want methods that pass our predicate
 				.filter(predicate)
 				// turn it into Map<Method, Result>
@@ -121,9 +126,6 @@ public class FieldsAndGetters {
 
 	/** Sentinel class for null objects. */
 	public static class ObjectIsNull {}
-
-	/** Sentinel class for objects whose class we can't access. */
-	public static class ObjectIsPrivate {}
 
 	/** Executes the given function, return any exceptions it might throw as wrapped values. */
 	private static Object tryCall(String methodName, Throwing.Supplier<Object> supplier) {
