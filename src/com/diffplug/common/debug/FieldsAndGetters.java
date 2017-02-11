@@ -46,7 +46,20 @@ public class FieldsAndGetters {
 	}
 
 	private static Class<?> getClassNullable(@Nullable Object obj) {
-		return obj == null ? ObjectIsNull.class : obj.getClass();
+		if (obj == null) {
+			return ObjectIsNull.class;
+		} else {
+			Class<?> clazz = obj.getClass();
+			System.out.println("##### " + clazz + " #####");
+			while (clazz != null && !Modifier.isPublic(clazz.getModifiers())) {
+				clazz = clazz.getSuperclass();
+			}
+			if (clazz == null) {
+				return ObjectIsPrivate.class;
+			} else {
+				return clazz;
+			}
+		}
 	}
 
 	/**
@@ -108,6 +121,9 @@ public class FieldsAndGetters {
 
 	/** Sentinel class for null objects. */
 	public static class ObjectIsNull {}
+
+	/** Sentinel class for objects whose class we can't access. */
+	public static class ObjectIsPrivate {}
 
 	/** Executes the given function, return any exceptions it might throw as wrapped values. */
 	private static Object tryCall(String methodName, Throwing.Supplier<Object> supplier) {
