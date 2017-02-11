@@ -19,11 +19,10 @@ import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
-import org.junit.Assert;
-
 import com.diffplug.common.base.Consumers;
 import com.diffplug.common.base.Either;
 import com.diffplug.common.base.Errors;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Blocks until a value is set.
@@ -47,12 +46,14 @@ public class Blocker<T> {
 	}
 
 	public synchronized void set(T value) {
+		AssertMisc.assertNull(result, "set or setException can only be called once");
 		onSet.accept(value);
 		result = Either.createLeft(value);
 		notifyAll();
 	}
 
-	public void setException(Throwable exception) {
+	public synchronized void setException(Throwable exception) {
+		AssertMisc.assertNull(result, "set or setException can only be called once");
 		result = Either.createRight(exception);
 		notifyAll();
 	}
@@ -61,23 +62,25 @@ public class Blocker<T> {
 		return result == null;
 	}
 
-	public void assertWaiting() {
-		Assert.assertTrue(isWaiting());
+	public synchronized void assertWaiting() {
+		AssertMisc.assertTrue(isWaiting());
 	}
 
-	public T assertDone() {
-		Assert.assertTrue(!isWaiting());
+	public synchronized T assertDone() {
+		AssertMisc.assertTrue(!isWaiting());
 		return unfold(result);
 	}
 
 	public void assertDoneEquals(Object expected) {
-		Assert.assertEquals(expected, assertDone());
+		Objects.requireNonNull(expected);
+		AssertMisc.assertEquals(expected, assertDone());
 	}
 
 	public synchronized T get() {
 		return getWithTimeout(DEFAULT_TIMEOUT);
 	}
 
+	@SuppressFBWarnings(value = "WA_NOT_IN_LOOP", justification = "Can only be set once anyway.")
 	public synchronized T getWithTimeout(long timeout) {
 		try {
 			if (result == null) {
@@ -97,8 +100,9 @@ public class Blocker<T> {
 	}
 
 	public void getAndAssertWithTimeout(T expected, long timeout) {
+		Objects.requireNonNull(expected);
 		T actual = getWithTimeout(timeout);
-		Assert.assertEquals(expected, actual);
+		AssertMisc.assertEquals(expected, actual);
 	}
 
 	public static <T> T getFuture(CompletionStage<T> stage) {

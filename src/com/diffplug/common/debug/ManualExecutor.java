@@ -24,7 +24,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 
 import com.diffplug.common.base.Preconditions;
-import com.diffplug.common.util.concurrent.MoreExecutors;
 
 /**
  * Makes it easy to setup a set of executors,
@@ -35,7 +34,7 @@ import com.diffplug.common.util.concurrent.MoreExecutors;
  */
 public class ManualExecutor {
 	public static ManualExecutor createImmediate() {
-		return create(MoreExecutors.directExecutor());
+		return create(toRun -> toRun.run());
 	}
 
 	public static ManualExecutor createAsync() {
@@ -74,6 +73,7 @@ public class ManualExecutor {
 	}
 
 	public Executor create(String key) {
+		Objects.requireNonNull(key);
 		QueuedExecutor executor = new QueuedExecutor();
 		Executor previous = map.put(key, executor);
 		Preconditions.checkArgument(previous == null, "Can only call create() once per key!");
@@ -81,6 +81,7 @@ public class ManualExecutor {
 	}
 
 	public void run(String key) {
+		Objects.requireNonNull(key);
 		QueuedExecutor value = map.remove(key);
 		Objects.requireNonNull(value, "Can only call run() once per key!");
 		value.unblock();
