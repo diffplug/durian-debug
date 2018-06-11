@@ -121,7 +121,7 @@ public class StackDumper {
 				printer.print(".");
 				printer.print(element.getMethodName());
 				printer.print("(");
-				printer.print(element.getFileName());
+				printer.print(element.getFileName() != null ? element.getFileName() : "null");
 				printer.print(":");
 				printer.print(Integer.toString(element.getLineNumber()));
 				printer.println(")");
