@@ -37,7 +37,7 @@ public class StepProfilerTest {
 
 		double initTotal = profiler.steps.get("init").stats.total;
 		double runTotal = profiler.steps.get("run").stats.total;
-		assertThat(initTotal).isWithin(0.05).of(0.1);
-		assertThat(runTotal).isWithin(0.05).of(0.9);
+		assertThat(initTotal).isWithin(0.1).of(0.1);
+		assertThat(runTotal).isWithin(0.1).of(0.9);
 	}
 }
