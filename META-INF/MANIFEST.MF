@@ -8,7 +8,7 @@ Bundle-ManifestVersion: 2
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-SymbolicName: com.diffplug.durian.debug
 Bundle-Vendor: DiffPlug
-Bundle-Version: 1.1.0.SNAPSHOT
+Bundle-Version: 1.1.0.I201807211625
 Export-Package: com.diffplug.common.debug;uses:="com.diffplug.common.b
  ase,javax.annotation";version="1.1.0"
 Import-Package: com.diffplug.common.base;version="[1.1,2)",com.diffplu
