@@ -1,6 +1,6 @@
 plugins {
 	// osgi
-	id "com.diffplug.gradle.osgi.bndmanifest" version "3.14.0"
+	id "com.diffplug.gradle.osgi.bndmanifest" version "3.16.0"
 	// code formatting
 	id "com.diffplug.gradle.spotless" version "3.13.0"
 	// bintray uploading
